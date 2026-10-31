@@ -12,9 +12,11 @@ no icons or emoji as decoration.
 ## Page order (top to bottom)
 
 1. **Header.** Page title (serif, regular weight) and one takeaway sentence in muted text with the
-   key numbers in bold: what happened in the chosen period, and which source drove it.
+   key numbers in bold: what happened in the chosen period, and which source drove it. Under it,
+   once a refresh is due (`refreshedAt` + `refreshEvery` days), a red-bordered "Out of date" line
+   telling the reader to say "refresh my growth dashboard". Never on sample data.
 2. **Filter row.** Segment as a segmented button group (`All` first), period as a dropdown
-   (newest first, partial periods labelled "Oct 2026 (1–26)"), and "Data to <date>" pushed right.
+   (newest first, partial periods labelled "Oct 2026 (1–26)"), and "Data to <date> · refreshed <date>" pushed right.
 3. **Metric tiles**, grouped under small uppercase labels ("Volume", "Efficiency"), max 4 per group.
 4. **Two chart cards side by side** (stack on narrow screens): contribution (stacked bars) and
    efficiency (lines by source). A funnel card follows when the metrics are stages.

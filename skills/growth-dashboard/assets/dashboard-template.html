@@ -15,6 +15,9 @@
     "title": "Growth Overview",            page title
     "sample": false,                       true shows a "Sample — not your data" badge
     "asOf": "2026-10-26",                  last date in the data
+    "refreshedAt": "2026-10-27",           day this page was built; with refreshEvery, shows a red
+    "refreshEvery": 1,                     "Out of date" banner once that many days have passed
+                                           (1 daily, 7 weekly, 30 monthly). No banner on sample data
     "grain": "month" | "week",             period ids: "YYYY-MM" or the Monday "YYYY-MM-DD"
     "currency": "$",                       symbol put before money values
     "segments": ["All", ...],              "All" first
@@ -92,6 +95,7 @@
   .gd-seg button:focus-visible, .gd-select:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
   .gd-select { font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 6px 10px; }
   .gd-fresh { margin-left: auto; color: var(--muted); font-size: var(--fs-caption); }
+  .gd-stale { margin: 0; color: var(--bad); border: 1px solid var(--bad); border-radius: var(--radius); padding: var(--g-sm) var(--g-md); line-height: 1.5; }
   .gd-group { display: grid; gap: var(--g-sm); }
   .gd-label { margin: 0; font-size: var(--fs-caption); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
   .gd-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: var(--g-md); }
@@ -133,6 +137,7 @@
       <span class="gd-badge" id="sample-badge" hidden>Sample — not your data</span>
     </div>
     <p class="gd-takeaway" id="takeaway"><span class="gd-skel"></span></p>
+    <p class="gd-stale" id="stale" role="status" hidden></p>
   </header>
 
   <div class="gd-filters" id="filters">
@@ -477,7 +482,19 @@
     $('page-title').textContent = D.title || 'Growth Overview';
     document.title = D.title || 'Growth Overview';
     $('sample-badge').hidden = !D.sample;
-    $('fresh').textContent = 'Data to ' + d3.utcFormat('%-d %b %Y')(new Date(D.asOf + 'T00:00:00Z'));
+    const dfmt = (iso) => d3.utcFormat('%-d %b %Y')(new Date(iso + 'T00:00:00Z'));
+    $('fresh').textContent = 'Data to ' + dfmt(D.asOf) + (D.refreshedAt ? ' · refreshed ' + dfmt(D.refreshedAt) : '');
+    // Out-of-date banner: compares the viewer's today with the refresh date, so it turns on by itself.
+    if (D.refreshedAt && !D.sample) {
+      const every = D.refreshEvery || 1, now = new Date();
+      const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+      const age = Math.floor((today - Date.parse(D.refreshedAt + 'T00:00:00Z')) / 864e5);
+      if (age >= every) {
+        $('stale').textContent = `Out of date: last refreshed ${dfmt(D.refreshedAt)} (${age} day${age === 1 ? '' : 's'} ago). ` +
+          'Say "refresh my growth dashboard" to your AI tool to pull new data and rebuild this page.';
+        $('stale').hidden = false;
+      }
+    }
     $('notes-list').replaceChildren(...(D.notes || []).map((n) => { const li = document.createElement('li'); li.textContent = n; return li; }));
     const segBox = $('segment-picker');
     segBox.replaceChildren(...D.segments.map((s) => {

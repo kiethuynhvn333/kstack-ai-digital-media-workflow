@@ -87,7 +87,8 @@ last updated: 2026-01-15 · confirmed by: the user
 | Create a recurring or scheduled task | no | the user |
 
 ## Defaults
-<!-- Rules 6, 23, 44. -->
+<!-- Rules 1, 6, 23, 44. -->
+- kstack folder: /Users/alex/Desktop/kstack-alex (the full path chosen at setup; open this folder next time)
 - Timezone: UTC · Currency: USD ($) · Week starts: Monday
 - Reporting: weekly update to the marketing manager, Monday 10:00 UTC
 - Knowledge review cadence: every Monday (knowledge itself is captured at the end of each session)

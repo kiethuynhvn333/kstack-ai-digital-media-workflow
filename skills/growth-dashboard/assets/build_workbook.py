@@ -164,8 +164,11 @@ def main(src, out):
             setup.cell(i, j, m.get(k, False if k == "perDay" else ""))
     th = (D.get("status") or {}).get("threshold", 0.05)
     setup["S1"], setup["T1"] = "Setting", "Value"
-    for i, (k, v) in enumerate([("Growing / declining threshold", th), ("Currency", cur), ("Data to", datetime.date.fromisoformat(D["asOf"]) if D.get("asOf") else "")], 2):
+    iso = lambda k: datetime.date.fromisoformat(D[k]) if D.get(k) else ""
+    for i, (k, v) in enumerate([("Growing / declining threshold", th), ("Currency", cur), ("Data to", iso("asOf")),
+                                ("Refreshed on", iso("refreshedAt")), ("Refresh every (days)", D.get("refreshEvery") or 1)], 2):
         setup.cell(i, 19, k), setup.cell(i, 20, v)
+    setup["T5"].number_format = "yyyy-mm-dd"
     for c in "ACDGHILMN":
         setup.column_dimensions[c].width = 18
     np_ = len(periods)
@@ -284,6 +287,14 @@ def main(src, out):
     if D.get("sample"):
         dash["B3"] = "Sample — not your data"
         dash["B3"].font = Font(name=SANS, size=10, bold=True, color=WARN)
+    elif D.get("refreshedAt"):
+        # Out-of-date banner: TODAY() recalculates on open, so it turns red by itself when a refresh is due.
+        dash["B3"] = ('=IF(TODAY()-Setup!$T$5>=Setup!$T$6,"Out of date: last refreshed "&TEXT(Setup!$T$5,"d mmm yyyy")'
+                      '&". Say ""refresh my growth dashboard"" to your AI tool to pull new data and rebuild this file.",'
+                      '"Refreshed "&TEXT(Setup!$T$5,"d mmm yyyy")&". Next refresh due "&TEXT(Setup!$T$5+Setup!$T$6,"d mmm yyyy")&".")')
+        dash["B3"].font = Font(name=SANS, size=10, color=MUTED)
+        dash.conditional_formatting.add("B3", FormulaRule(formula=["TODAY()-Setup!$T$5>=Setup!$T$6"],
+                                                          font=Font(bold=True, color=BAD), fill=PatternFill("solid", fgColor="FDECEA")))
 
     dash["B4"], dash["D4"] = "Segment", "Period"
     for a in ("B4", "D4"):

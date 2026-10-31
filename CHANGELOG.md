@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.5.2 — clearer setup, your choice of folder, dashboards that say when they are stale (2026-10-31)
+- **Setup questions in plain words.** `rules/setup.md` rules 2–6 now give the exact short questions,
+  one idea each with an example ("Which company do you work for?", "Which channels do you handle?"),
+  one topic per message. Words like segment, objective and cadence are never said to the user.
+- **You choose where kstack lives.** The Quick start prompt asks where to put the folder, with your
+  Desktop as the default, repeats the full path back, and setup saves it in `workspace.md`.
+- **growth-dashboard asks where to save.** Step 5 now asks for the folder (default: a
+  `growth-dashboard` folder on your Desktop) and how often to refresh (daily by default). All files go
+  in that folder; an artifact or site also gets an HTML copy there.
+- **Out-of-date banner.** The HTML page and the workbook show "Data to … · refreshed …" and turn red
+  with "Out of date: say 'refresh my growth dashboard'" once the refresh is due (`refreshedAt`,
+  `refreshEvery` in the data file). The hand-over now asks "Is this data up to date?" and says when the
+  next refresh is due.
+- **After a Gemini test (web app):** Gemini skipped the save/refresh choices, made up a Desktop path,
+  built without the Checks and dropped the hand-over block. Now the step 5 save/refresh choices and the
+  step 9 hand-over are fixed blocks copied word for word, the path must be the real one (found with a
+  command, never a placeholder), the reply after the plan's yes is always the Checks, and a new
+  "Matches the source" check compares one dashboard number with the raw data. Setup shows its file
+  previews in plain words too.
+- **Web versions can't save to your computer.** The README, `rules/setup.md` and the growth-dashboard
+  skill now say so: in Gemini, ChatGPT or Claude in a browser, the agent gives files to download and
+  never claims it saved them. Use a desktop app or CLI for kstack.
+
 ## v0.5.1 — growth-dashboard follows its own order (2026-10-30)
 A test in Gemini showed the skill was only followed when the user forced the order. Now the skill
 enforces it: a hard-stop block at the top (an attached file does not answer the step 1–4 questions;

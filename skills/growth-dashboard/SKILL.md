@@ -18,10 +18,13 @@ description: Build a growth overview dashboard for someone who has never made on
 - **The plan (step 5) and the Checks (step 7) are two different messages.** Write no Checks, and
   pull no numbers, until the user has replied yes to the plan. Never send the Checks in the same
   message as the plan or as the built file.
+- **The reply after the plan's yes is always the Checks message**, never a built file.
 - **"Use your suggestions" answers the questions only.** It is never a yes to the plan or to the
   Checks. Each of those needs its own reply.
 - **A data file in the chat means real data.** Never offer or use the sample (option D in step 3).
 - Only exception: "refresh" with an existing spec file (see below).
+- **Web chat (Gemini, ChatGPT or Claude in a browser) cannot save to the user's computer.** Never say
+  "saved to <folder>" there: give the files to download and tell the user which folder to put them in.
 - Write every reply in the language of the user's last message, from the first reply to the last.
 
 **Who it is for:** a growth or marketing person who wants one view of (1) the few metrics they are
@@ -47,13 +50,17 @@ chat; connecting a tool is done in the tool's own settings.
      `assets/build_workbook.py`, laid out as in `references/spreadsheet-spec.md`. Opens in Excel, and in
      Google Sheets by importing it. Familiar, easy to share, and can refresh from a connected sheet.
    All versions follow the same chart guide and the same look (`references/ui-spec.md`).
-4. `growth-dashboard-spec.md`: the answers, metric definitions, data source, queries and the chosen
-   version, so the next refresh is one sentence ("refresh my growth dashboard"). In kstack, save all
-   files in `projects/<project>/deliverables/growth-dashboard/`; elsewhere, together in a folder the
-   user names.
+4. `growth-dashboard-spec.md`: the answers, metric definitions, data source, queries, the chosen
+   version, the save folder and how often to refresh, so the next refresh is one sentence ("refresh
+   my growth dashboard").
+5. **Where it is saved:** all files (spec, `dashboard-data.json`, the HTML or `.xlsx`) go together in
+   the folder the user picks at step 5. Default: a `growth-dashboard` folder on the user's Desktop.
+   A Claude artifact or ChatGPT site also gets an HTML copy there, so a refresh always has the files.
+   In kstack, also write the full path in the project's worklog entry.
 
 If a spec file already exists and the user says "refresh", skip to step 6 with the same spec
-(steps 7 and 8 still apply: Checks, a yes, then build).
+(steps 7 and 8 still apply: Checks, a yes, then build). Rebuild the same version in the same folder,
+with `refreshedAt` set to today, which clears the "Out of date" banner.
 
 ## Step 1 — Industry
 Ask: "What kind of business do you grow?" Show the list in `references/industries.md` (short
@@ -92,6 +99,7 @@ message as suggestions to confirm.
 
 **Partial answers:** if the user skips or half-answers anything in steps 1–4, don't ask again. Use
 your own suggestion and mark it in the plan as "(my pick)" so they can change it at step 5.
+Never use "(my pick)" for where to save or how often to refresh: always show those two choices.
 
 ## Step 4 — Sources of growth
 1. Ask which sources bring growth today. Suggest the usual ones for their industry
@@ -116,8 +124,23 @@ or a Sheets connector; the HTML file always works. If they are not sure: the art
 it is just for them to look at, Excel when they will edit it or share it with a team, the HTML file
 when nothing else fits. Add **one line of pushback** if you see a problem
 (e.g. "paid is only ~8% of your users, so the total will barely move even if paid doubles").
-Add a one-line sketch of the page ("You'll see: 4 tiles, bars by source, a status table"). Ask what to
-add or remove. End the message with exactly this line and nothing after it:
+Add a one-line sketch of the page ("You'll see: 4 tiles, bars by source, a status table").
+Then copy these two blocks into the plan word for word, with the real path filled in. They are
+required in every plan, even when the user said "use your suggestions":
+
+```
+Where should I save it?
+1. A growth-dashboard folder on your Desktop: <real full path> (default)
+2. Another folder: tell me its full path
+How often should the data be refreshed? The page turns red "Out of date" after this time.
+1. Every day (default)   2. Every week   3. Every month
+```
+In kstack, add "3. This project's deliverables folder: <real full path>" to the first block.
+- **Real path only.** Find it with a command (e.g. `echo "$HOME/Desktop"`). Never write a placeholder
+  (`/Users/<name>/…`) or a guess (`/Users/desktop/…`). If you cannot see the user's computer (web
+  chat), write "the growth-dashboard folder on your Desktop" and say you will give files to download.
+- Create the folder only after the yes, and repeat the chosen full path in your next message.
+Ask what to add or remove. End the message with exactly this line and nothing after it:
 `Reply yes to approve the plan.` Then **stop and wait. Build nothing before the user says yes.**
 
 ## Step 6 — Pull the numbers
@@ -145,6 +168,8 @@ Its own step. **Never in the same message as the built file.**
      the chart).
    - **Unit costs:** a cost per *daily-average* person uses daily cost (cost ÷ days ÷ people);
      a cost per action uses the period total (cost ÷ actions).
+   - **Matches the source:** for one period, one source and one metric, compare the dashboard
+     number with the raw data (the sum of the file's rows, or a fresh query). They must be equal.
    - **Two raw examples:** look at one normal and one extreme row yourself.
 2. Post a short "Checks" message in chat: each check above with pass / fail / not run, the latest
    date found, and what was not checked. Writing the checks only in the spec file does not count.
@@ -165,18 +190,20 @@ Its own step. **Never in the same message as the built file.**
      monthly totals with daily averages, no mixing sources. If unsure, leave the funnel out.
    - **A rate above 100% is a bug.** Don't show it: fix the definition or drop the chart.
    - Don't add charts this skill doesn't define.
-2. Write `dashboard-data.json` (format at the top of `assets/dashboard-template.html`). Every caveat
+2. Write `dashboard-data.json` (format at the top of `assets/dashboard-template.html`), with
+   `refreshedAt` = today and `refreshEvery` = the days picked at step 5 (1, 7 or 30). Every caveat
    goes in its `notes`: definitions, what "Not linked" is, partial periods, overlaps and why people
    totals are empty, anything missing. Empty or not-available values show "—", never blank.
 3. Build the version the user picked:
    - **Live page in the tool (Claude artifact / ChatGPT site):** use the contents of
      `assets/dashboard-template.html` with the JSON inside its `dashboard-data` block replaced, as
      the artifact or site. If the tool blocks the page's external scripts or fonts (d3, Google
-     Fonts) and it renders empty, say so and offer the HTML file.
+     Fonts) and it renders empty, say so and offer the HTML file. Also save the same page as an
+     HTML file in the folder picked at step 5.
    - **HTML file:** copy `assets/dashboard-template.html`, replace the JSON inside its
-     `dashboard-data` block, and save it where the user can open it. Follow `references/ui-spec.md`
+     `dashboard-data` block, and save it in the folder picked at step 5. Follow `references/ui-spec.md`
      for anything you add by hand.
-   - **Spreadsheet:** run `python3 assets/build_workbook.py dashboard-data.json growth-dashboard.xlsx`
+   - **Spreadsheet:** run `python3 assets/build_workbook.py dashboard-data.json <folder>/growth-dashboard.xlsx`
      (needs Python with `openpyxl`; ask before installing it). No Python but a Google Sheets
      connector: build the tabs by hand as in `references/spreadsheet-spec.md`. Neither: say so and
      offer the live page or the HTML file. For Google Sheets, tell the user: upload the file to Google Drive, then
@@ -185,7 +212,8 @@ Its own step. **Never in the same message as the built file.**
    check the tiles show numbers or "—", not errors); fix what is visibly broken.
 
 ## Step 9 — Hand over
-Tell the user, in a few lines: where the file is, what the page shows, the 2–3 things the numbers
+Tell the user, in a few lines: the full path of the folder and file (and the artifact or site link),
+what the page shows, the 2–3 things the numbers
 already say (facts with their source, not advice), what is not covered, and how to refresh
 ("say 'refresh my growth dashboard'", or automatic when the data is a live connection; in Google
 Sheets, the `Data` tab can be fed by a connected source and everything else recalculates, see
@@ -194,12 +222,27 @@ previewer; previews can show empty cells until it recalculates." And: "Next time
 `growth-dashboard-spec.md` and the new data file, and say refresh" (chat tools don't keep files
 between chats). Offer a
 daily refresh only if their tool can schedule tasks, and set one up only on their yes (rule 35).
+
+End the hand-over by copying this block word for word, every <…> filled in, then stop and wait:
+
+```
+Files in <real full path of the folder>:
+- <dashboard file name>, growth-dashboard-spec.md, dashboard-data.json
+Is this data up to date? The newest date in it is <asOf>. If newer data exists, say
+"refresh my growth dashboard" now.
+Refresh due <refreshedAt + refreshEvery>. From that day the page shows a red "Out of date"
+banner. When you see it, say "refresh my growth dashboard": I will pull the new data, rerun the
+checks and rebuild the <version> in <folder>.
+```
+In a web chat, the first line reads "Download these files and put them in <folder>:".
+
 In kstack: end with `skills/session-close/`.
 
 ## Don'ts
 - Don't build before steps 1–4 are answered, the plan is approved and the Checks are approved, and
   don't invent data. Sample data is always labelled. An attached file is not an answer.
-- Don't send the Checks together with the built file.
+- Don't send the Checks together with the built file, or build without sending them.
+- Don't choose the save folder or the refresh frequency for the user, and don't invent a path.
 - Don't add up people across sources or segments as if they were unique.
 - Don't show an efficiency chart without spend, a funnel that mixes units, or a rate above 100%.
 - Don't trust an ad platform's own "conversions" as the business result when the user's own data

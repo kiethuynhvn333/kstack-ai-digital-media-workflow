@@ -32,8 +32,10 @@ Everything on **Dashboard** and **Detail** is a formula over **Data**, filtered 
 never 0. Missing values are skipped by the line chart (gaps, not drops to zero).
 
 ## Layout of the Dashboard tab
-1. Row 1 title (serif, large), row 2 the takeaway sentence (a formula), a "Sample — not your data"
-   note when the data is the sample.
+1. Row 1 title (serif, large), row 2 the takeaway sentence (a formula), row 3 a "Sample — not your
+   data" note when the data is the sample; otherwise a `TODAY()` formula that reads "Refreshed <date>.
+   Next refresh due <date>." and turns red ("Out of date…") once the refresh is due (Setup: Refreshed
+   on, Refresh every (days)).
 2. Row 4: **Segment** dropdown, **Period** dropdown (partial periods labelled), "Data to <date>".
 3. Tile rows, grouped under small uppercase labels (Volume, Efficiency): per tile a name line (small,
    grey), the value (large serif) and the change vs the period before (green if good, red if bad,
@@ -47,7 +49,8 @@ Gridlines off on Dashboard. Fonts: Georgia for the title and big numbers, Arial 
 IBM Plex Sans under **More fonts** to match the web page exactly).
 
 ## Refreshing
-- **Simple:** get the new numbers into `dashboard-data.json` and run the script again.
+- **Simple:** get the new numbers into `dashboard-data.json`, set `refreshedAt` to today, and run
+  the script again.
 - **Live in Google Sheets:** keep the same long format in the **Data** tab but fill it from a
   connected source (Connected Sheets for BigQuery, a data connector add-on, or `IMPORTRANGE` from a
   sheet that is updated for you). Everything else recalculates. When a new period starts, add it to
